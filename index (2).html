@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>90-Day Fitness Blueprint</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #080c12; min-height: 100vh; }
+    body { font-family: 'DM Sans', 'Helvetica Neue', sans-serif; color: #e8edf5; }
+    button { font-family: 'DM Sans', 'Helvetica Neue', sans-serif; }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: #0d1623; }
+    ::-webkit-scrollbar-thumb { background: #1a2332; border-radius: 2px; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const PHASES = [
+  {
+    num: 1, label: "FOUNDATION", days: "Days 1–30", color: "#00d4aa", bg: "#00d4aa18",
+    freq: "3 lifting days + 2 cardio days + 2 rest",
+    desc: "Build the habits. Learn every movement with perfect form. Your body is adapting — don't rush the weights.",
+    schedule: [
+      { day: "MON", type: "lift", label: "Full Body A" },
+      { day: "TUE", type: "cardio", label: "30-min Walk" },
+      { day: "WED", type: "lift", label: "Full Body B" },
+      { day: "THU", type: "cardio", label: "30-min Walk" },
+      { day: "FRI", type: "lift", label: "Full Body A/B" },
+      { day: "SAT", type: "rest", label: "Rest / Stretch" },
+      { day: "SUN", type: "rest", label: "Rest" },
+    ],
+    workouts: [
+      {
+        name: "Full Body A",
+        exercises: [
+          { name: "Goblet Squat", sets: 3, reps: "12", rest: "60s", tip: "Hold DB at chest, sit back and deep" },
+          { name: "DB Bench Press", sets: 3, reps: "12", rest: "60s", tip: "Control the descent, full range" },
+          { name: "DB Row (each arm)", sets: 3, reps: "12", rest: "60s", tip: "Brace core, pull elbow straight back" },
+          { name: "DB Shoulder Press", sets: 3, reps: "12", rest: "60s", tip: "Don't arch lower back" },
+          { name: "Romanian Deadlift", sets: 3, reps: "12", rest: "60s", tip: "Hinge at hips, soft knees, feel hamstrings" },
+          { name: "Plank Hold", sets: 3, reps: "30 sec", rest: "45s", tip: "Hips level, breathe steadily" },
+        ]
+      },
+      {
+        name: "Full Body B",
+        exercises: [
+          { name: "DB Reverse Lunge", sets: 3, reps: "10 each", rest: "60s", tip: "Step back, front knee over toe" },
+          { name: "Incline DB Press", sets: 3, reps: "12", rest: "60s", tip: "Bench at 30–45°, squeeze chest at top" },
+          { name: "DB Bicep Curl", sets: 3, reps: "12", rest: "60s", tip: "Don't swing — control both directions" },
+          { name: "Tricep Overhead Ext.", sets: 3, reps: "12", rest: "60s", tip: "Elbows close, lower behind head" },
+          { name: "Glute Bridge", sets: 3, reps: "15", rest: "45s", tip: "Drive hips up, hard squeeze at top" },
+          { name: "Dead Bug", sets: 3, reps: "10 each", rest: "45s", tip: "Lower back stays flat on floor throughout" },
+        ]
+      }
+    ]
+  },
+  {
+    num: 2, label: "BUILD", days: "Days 31–60", color: "#ff9500", bg: "#ff950018",
+    freq: "4 lifting days + 2 cardio days + 1 rest",
+    desc: "Volume increases, weights get heavier. Upper/Lower split allows more focus and volume per muscle group.",
+    schedule: [
+      { day: "MON", type: "lift", label: "Upper Body" },
+      { day: "TUE", type: "lift", label: "Lower Body" },
+      { day: "WED", type: "cardio", label: "Brisk Walk/Bike" },
+      { day: "THU", type: "lift", label: "Upper Body" },
+      { day: "FRI", type: "lift", label: "Lower Body" },
+      { day: "SAT", type: "cardio", label: "30-min Cardio" },
+      { day: "SUN", type: "rest", label: "Rest" },
+    ],
+    workouts: [
+      {
+        name: "Upper Body",
+        exercises: [
+          { name: "DB Bench Press", sets: 4, reps: "10", rest: "75s", tip: "Heavier than Phase 1" },
+          { name: "DB Row (each arm)", sets: 4, reps: "10", rest: "75s", tip: "Heavier, controlled" },
+          { name: "Incline DB Press", sets: 3, reps: "10", rest: "75s", tip: "" },
+          { name: "DB Shoulder Press", sets: 3, reps: "10", rest: "75s", tip: "" },
+          { name: "DB Skull Crushers", sets: 3, reps: "12", rest: "60s", tip: "Lower DBs to temples slowly" },
+          { name: "DB Bicep Curl", sets: 3, reps: "12", rest: "60s", tip: "" },
+          { name: "Lateral Raises", sets: 3, reps: "15", rest: "45s", tip: "Light weight, slow and controlled" },
+        ]
+      },
+      {
+        name: "Lower Body",
+        exercises: [
+          { name: "Goblet Squat", sets: 4, reps: "10", rest: "75s", tip: "Heavier DB than Phase 1" },
+          { name: "Romanian Deadlift", sets: 4, reps: "10", rest: "75s", tip: "" },
+          { name: "DB Reverse Lunge", sets: 3, reps: "10 each", rest: "75s", tip: "" },
+          { name: "Step-Up (with DBs)", sets: 3, reps: "10 each", rest: "60s", tip: "Use bench — full step-up, drive through heel" },
+          { name: "Weighted Glute Bridge", sets: 3, reps: "15", rest: "45s", tip: "DB on hips" },
+          { name: "Calf Raise", sets: 3, reps: "20", rest: "45s", tip: "Slow — 2 sec up, 2 sec down" },
+          { name: "Plank Hold", sets: 3, reps: "45 sec", rest: "45s", tip: "" },
+        ]
+      }
+    ]
+  },
+  {
+    num: 3, label: "INTENSIFY", days: "Days 61–90", color: "#ff3b5c", bg: "#ff3b5c18",
+    freq: "5 lifting days + HIIT + 1 rest",
+    desc: "Push/Pull/Legs. Maximum volume, maximum intensity. This phase forges the results the first two phases built toward.",
+    schedule: [
+      { day: "MON", type: "lift", label: "Push" },
+      { day: "TUE", type: "lift", label: "Pull" },
+      { day: "WED", type: "lift", label: "Legs + Core" },
+      { day: "THU", type: "lift", label: "Push" },
+      { day: "FRI", type: "lift", label: "Pull" },
+      { day: "SAT", type: "cardio", label: "20-min HIIT" },
+      { day: "SUN", type: "rest", label: "Rest" },
+    ],
+    workouts: [
+      {
+        name: "Push — Chest / Shoulders / Triceps",
+        exercises: [
+          { name: "DB Bench Press", sets: 4, reps: "8–10", rest: "90s", tip: "Heaviest weight in the program" },
+          { name: "Incline DB Press", sets: 4, reps: "10", rest: "90s", tip: "" },
+          { name: "DB Shoulder Press", sets: 4, reps: "10", rest: "75s", tip: "" },
+          { name: "Lateral Raises", sets: 3, reps: "15", rest: "45s", tip: "" },
+          { name: "DB Skull Crushers", sets: 3, reps: "12", rest: "60s", tip: "" },
+          { name: "Tricep Kickback", sets: 3, reps: "15", rest: "45s", tip: "Fully extend at the bottom" },
+        ]
+      },
+      {
+        name: "Pull — Back / Biceps",
+        exercises: [
+          { name: "DB Row (each arm)", sets: 4, reps: "10", rest: "90s", tip: "Heavy — slow on the way down" },
+          { name: "Bent-Over DB Row", sets: 4, reps: "10", rest: "90s", tip: "Both arms simultaneously" },
+          { name: "DB Rear Delt Fly", sets: 3, reps: "15", rest: "60s", tip: "Hinge forward, light weight" },
+          { name: "DB Bicep Curl", sets: 3, reps: "12", rest: "60s", tip: "" },
+          { name: "Hammer Curl", sets: 3, reps: "12", rest: "60s", tip: "Neutral grip — forearm builder" },
+          { name: "DB Shrug", sets: 3, reps: "15", rest: "45s", tip: "Hold at top for 1 sec" },
+        ]
+      },
+      {
+        name: "Legs + Core",
+        exercises: [
+          { name: "Goblet Squat", sets: 4, reps: "10", rest: "90s", tip: "Max weight" },
+          { name: "Romanian Deadlift", sets: 4, reps: "10", rest: "90s", tip: "" },
+          { name: "DB Walking Lunge", sets: 3, reps: "12 each", rest: "75s", tip: "" },
+          { name: "Step-Up (with DBs)", sets: 3, reps: "12 each", rest: "75s", tip: "" },
+          { name: "Calf Raise", sets: 4, reps: "20", rest: "45s", tip: "" },
+          { name: "Plank Hold", sets: 3, reps: "60 sec", rest: "45s", tip: "" },
+          { name: "Russian Twist (DB)", sets: 3, reps: "20 total", rest: "45s", tip: "Hold light DB, rotate fully each side" },
+        ]
+      }
+    ]
+  }
+];
+
+const MEALS = [
+  { time: "7:00 AM", label: "Breakfast", cal: 420, protein: 38, carbs: 38, fat: 12, main: "4-egg scramble + spinach + salsa", side: "½ cup oats with mixed berries" },
+  { time: "10:30 AM", label: "Mid-Morning Snack", cal: 180, protein: 22, carbs: 14, fat: 4, main: "1 cup 0% Greek yogurt", side: "1 tbsp honey + cinnamon" },
+  { time: "12:00 PM", label: "Pre-Workout Snack", cal: 160, protein: 15, carbs: 20, fat: 3, main: "Rice cakes (2) + 2 tbsp peanut butter", side: "Or: banana + 1 scoop protein shake" },
+  { time: "1:30 PM", label: "Post-Workout Lunch", cal: 520, protein: 52, carbs: 48, fat: 14, main: "8 oz ground turkey + ¾ cup white rice", side: "Roasted broccoli + olive oil — biggest meal of the day" },
+  { time: "4:30 PM", label: "Afternoon Snack", cal: 200, protein: 26, carbs: 10, fat: 7, main: "2 oz beef jerky + 1 string cheese", side: "Apple or small bunch of grapes" },
+  { time: "7:00 PM", label: "Dinner", cal: 370, protein: 42, carbs: 22, fat: 12, main: "6 oz salmon or chicken breast", side: "Large salad + light dressing — keep carbs lower at night" },
+];
+
+const GROCERY = [
+  { category: "Proteins", icon: "🥩", color: "#ff3b5c", items: [
+    { name: "Eggs", qty: "2 dozen", note: "4/day for breakfast scramble" },
+    { name: "Ground turkey (93% lean)", qty: "4 lbs", note: "Lunch protein — ~8 oz/day" },
+    { name: "Chicken breast", qty: "2.5 lbs", note: "Dinner — 3–4 nights" },
+    { name: "Salmon fillets", qty: "1.5 lbs", note: "Dinner — 2–3 nights" },
+    { name: "Beef jerky", qty: "14 oz", note: "2 oz/day afternoon snack" },
+    { name: "String cheese", qty: "7 sticks", note: "1/day with jerky" },
+    { name: "Protein powder (whey)", qty: "1 tub", note: "Optional pre-workout shake backup" },
+  ]},
+  { category: "Dairy", icon: "🥛", color: "#a78bfa", items: [
+    { name: "Greek yogurt (0% plain)", qty: "2 large tubs (32 oz)", note: "~1 cup/day morning snack" },
+    { name: "Honey", qty: "1 bottle", note: "Yogurt topping" },
+  ]},
+  { category: "Produce", icon: "🥦", color: "#00d4aa", items: [
+    { name: "Baby spinach", qty: "2 bags (5 oz each)", note: "Breakfast scramble daily" },
+    { name: "Broccoli", qty: "2 large heads or 2 bags frozen", note: "Lunch side — roasted" },
+    { name: "Salad greens (mixed)", qty: "2 bags", note: "Dinner salad base" },
+    { name: "Bananas", qty: "5–6", note: "Pre-workout snack alternative" },
+    { name: "Apples", qty: "5–6", note: "Afternoon snack" },
+    { name: "Mixed berries", qty: "1 bag frozen (16 oz)", note: "Breakfast oats topping" },
+    { name: "Grapes", qty: "1 bunch", note: "Afternoon snack rotation" },
+  ]},
+  { category: "Pantry & Dry Goods", icon: "🫙", color: "#ff9500", items: [
+    { name: "Rolled oats", qty: "1 canister (42 oz)", note: "½ cup daily at breakfast" },
+    { name: "White rice", qty: "2 lb bag", note: "Lunch carb base" },
+    { name: "Rice cakes (plain)", qty: "1 bag", note: "Pre-workout snack" },
+    { name: "Peanut butter (natural)", qty: "1 jar", note: "Rice cake topping" },
+    { name: "Salsa", qty: "1 jar", note: "Egg scramble topping — zero calories" },
+    { name: "Cinnamon", qty: "1 container", note: "Yogurt topping" },
+  ]},
+  { category: "Oils & Sauces", icon: "🫒", color: "#38bdf8", items: [
+    { name: "Olive oil", qty: "1 bottle", note: "Roasting broccoli, cooking" },
+    { name: "Light salad dressing", qty: "1 bottle", note: "Dinner salads — keep it light" },
+    { name: "Hot sauce or soy sauce", qty: "1 bottle", note: "Flavor without calories" },
+  ]},
+  { category: "Hydration", icon: "💧", color: "#4a9eff", items: [
+    { name: "Sparkling water (variety)", qty: "2 cases (12-pack)", note: "Helps hit 100+ oz/day goal" },
+    { name: "Black coffee or green tea", qty: "1 bag/canister", note: "Pre-workout energy — no sugar" },
+    { name: "Salt, pepper, garlic powder", qty: "As needed", note: "Season everything" },
+  ]},
+];
+
+const TIPS = [
+  { icon: "🍳", tip: "Meal prep Sunday — cook all proteins for the week in one session. 45 min saves you hours." },
+  { icon: "⚡", tip: "The 12:00 PM pre-workout snack matters — light carbs give you energy without sitting heavy during training." },
+  { icon: "🍚", tip: "Post-workout lunch at 1:30 PM is your biggest meal. This is when your body absorbs carbs and protein most efficiently." },
+  { icon: "🌙", tip: "Keep dinner lighter on carbs — you're not training after. Load up on protein and greens." },
+  { icon: "💧", tip: "Drink 100+ oz water daily. Desk workers get chronically dehydrated — it tanks energy, focus, and hunger signals." },
+  { icon: "📦", tip: "Keep jerky, Greek yogurt, and rice cakes at your desk. Zero prep, high protein, easy to grab between calls." },
+];
+
+const DAY_COLORS = { lift: "#00d4aa", cardio: "#ff9500", rest: "#4a5568" };
+
+// ─── STORAGE (localStorage for standalone use) ────────────────────────────
+
+function storageGet(key) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+function storageSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+function todayKey() {
+  return `fitness_checkin_${new Date().toISOString().split("T")[0]}`;
+}
+function dateKey(daysAgo) {
+  const d = new Date(); d.setDate(d.getDate() - daysAgo);
+  return `fitness_checkin_${d.toISOString().split("T")[0]}`;
+}
+function shortDate(daysAgo) {
+  const d = new Date(); d.setDate(d.getDate() - daysAgo);
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" });
+}
+function dayScore(data) {
+  if (!data) return 0;
+  return (data.meals || []).filter(Boolean).length + (data.workout ? 4 : 0);
+}
+function getGrade(pct) {
+  if (pct >= 95) return { letter: "A+", color: "#00d4aa", label: "Elite" };
+  if (pct >= 90) return { letter: "A",  color: "#00d4aa", label: "Excellent" };
+  if (pct >= 80) return { letter: "B",  color: "#7ecb20", label: "Strong" };
+  if (pct >= 70) return { letter: "C",  color: "#ff9500", label: "Solid" };
+  if (pct >= 60) return { letter: "D",  color: "#ff6b35", label: "Keep Going" };
+  return           { letter: "F",  color: "#ff3b5c", label: "Restart" };
+}
+function emptyDay() { return { meals: Array(MEALS.length).fill(false), workout: false }; }
+
+// ─── COMPONENTS ─────────────────────────────────────────────────────────────
+
+function Checkbox({ checked, onToggle, color = "#00d4aa" }) {
+  return (
+    <div onClick={e => { e.stopPropagation(); onToggle(); }} style={{
+      width: 26, height: 26, borderRadius: 6, flexShrink: 0, cursor: "pointer",
+      border: `2px solid ${checked ? color : "#2a3a4a"}`,
+      background: checked ? color : "transparent",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      transition: "all 0.15s ease", userSelect: "none",
+    }}>
+      {checked && <span style={{ color: "#000", fontSize: 14, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+    </div>
+  );
+}
+
+function ScoreRing({ score, max, color, size = 90 }) {
+  const pct = max > 0 ? score / max : 0;
+  const r = (size / 2) - 8;
+  const circ = 2 * Math.PI * r;
+  const dash = pct * circ;
+  return (
+    <svg width={size} height={size}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1a2332" strokeWidth={7} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={7}
+        strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`} style={{ transition: "stroke-dasharray 0.4s ease" }} />
+      <text x={size/2} y={size/2+1} textAnchor="middle" dominantBaseline="middle"
+        fill="#fff" fontSize={18} fontWeight="800">{score}</text>
+      <text x={size/2} y={size/2+15} textAnchor="middle" dominantBaseline="middle"
+        fill="#4a6080" fontSize={9}>/{max}</text>
+    </svg>
+  );
+}
+
+// ─── MAIN ───────────────────────────────────────────────────────────────────
+
+function App() {
+  const [tab, setTab] = useState("track");
+  const [phaseIdx, setPhaseIdx] = useState(0);
+  const [workoutIdx, setWorkoutIdx] = useState(0);
+  const [todayData, setTodayData] = useState(() => storageGet(todayKey()) || emptyDay());
+  const [weekHistory, setWeekHistory] = useState(() => {
+    return Array.from({ length: 7 }, (_, i) => ({
+      label: shortDate(i), data: storageGet(dateKey(i)), isToday: i === 0,
+    }));
+  });
+
+  const phase = PHASES[phaseIdx];
+  const MAX_DAILY = MEALS.length + 4;
+
+  function updateToday(newData) {
+    setTodayData(newData);
+    storageSet(todayKey(), newData);
+    setWeekHistory(prev => prev.map((h, i) => i === 0 ? { ...h, data: newData } : h));
+  }
+  function toggleMeal(i) {
+    const meals = [...todayData.meals]; meals[i] = !meals[i];
+    updateToday({ ...todayData, meals });
+  }
+  function toggleWorkout() { updateToday({ ...todayData, workout: !todayData.workout }); }
+
+  const todayScore = dayScore(todayData);
+  const todayPct   = Math.round((todayScore / MAX_DAILY) * 100);
+  const todayGrade = getGrade(todayPct);
+  const weekTotal  = weekHistory.reduce((s, h) => s + dayScore(h.data), 0);
+  const weekMax    = weekHistory.length * MAX_DAILY;
+  const weekPct    = weekMax > 0 ? Math.round((weekTotal / weekMax) * 100) : 0;
+  const weekGrade  = getGrade(weekPct);
+  let streak = 0;
+  for (const h of weekHistory) { if (dayScore(h.data) > 0) streak++; else break; }
+
+  const TABS = [
+    { id: "track", label: "📊 Track" },
+    { id: "overview", label: "Overview" },
+    { id: "workouts", label: "Workouts" },
+    { id: "meals", label: "Meals" },
+    { id: "grocery", label: "Grocery" },
+  ];
+
+  return (
+    <div style={{ fontFamily: "'DM Sans','Helvetica Neue',sans-serif", background: "#080c12", minHeight: "100vh", color: "#e8edf5", maxWidth: 680, margin: "0 auto" }}>
+
+      {/* HEADER */}
+      <div style={{ background: "linear-gradient(160deg,#0d1623 0%,#080c12 100%)", padding: "24px 20px 18px", borderBottom: "1px solid #1a2332", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle,#00d4aa12,transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ fontSize: 10, letterSpacing: 3, color: "#00d4aa", textTransform: "uppercase", marginBottom: 6, fontWeight: 600 }}>90-Day Transformation Plan</div>
+        <h1 style={{ margin: "0 0 14px", fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1.1 }}>Your Personal Fitness Blueprint</h1>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[{ label: "Age", val: "55 yrs", c: "#00d4aa" }, { label: "Start", val: "213 lbs", c: "#ff9500" }, { label: "Calories", val: "1,750/day", c: "#ff3b5c" }, { label: "Protein", val: "180g/day", c: "#a78bfa" }].map(s => (
+            <div key={s.label} style={{ background: "#0d1623", border: `1px solid ${s.c}30`, borderRadius: 8, padding: "6px 10px" }}>
+              <div style={{ fontSize: 9, color: "#4a6080", letterSpacing: 1, textTransform: "uppercase", marginBottom: 1 }}>{s.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: s.c }}>{s.val}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* NAV */}
+      <div style={{ display: "flex", background: "#0d1623", borderBottom: "1px solid #1a2332", overflowX: "auto" }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{ flex: "1 0 auto", padding: "12px 10px", background: "transparent", border: "none", borderBottom: tab === t.id ? "2px solid #00d4aa" : "2px solid transparent", color: tab === t.id ? "#00d4aa" : "#4a6080", fontWeight: tab === t.id ? 700 : 400, fontSize: 12, cursor: "pointer", letterSpacing: 0.3, whiteSpace: "nowrap" }}>{t.label}</button>
+        ))}
+      </div>
+
+      <div style={{ padding: "20px 16px 40px" }}>
+
+        {/* ─── TRACK ─── */}
+        {tab === "track" && (
+          <div>
+            {/* Today Score */}
+            <div style={{ background: "#0d1623", borderRadius: 16, padding: 20, marginBottom: 14, border: `1px solid ${todayGrade.color}30`, display: "flex", alignItems: "center", gap: 20 }}>
+              <ScoreRing score={todayScore} max={MAX_DAILY} color={todayGrade.color} />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 10, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 4 }}>Today's Score</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 44, fontWeight: 900, color: todayGrade.color, lineHeight: 1 }}>{todayGrade.letter}</span>
+                  <span style={{ fontSize: 14, color: "#627990" }}>{todayPct}%</span>
+                </div>
+                <div style={{ fontSize: 12, color: "#627990" }}>{todayGrade.label}</div>
+                <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                  <div style={{ fontSize: 11, color: "#00d4aa" }}>🍽 {todayData.meals.filter(Boolean).length}/{MEALS.length} meals</div>
+                  <div style={{ fontSize: 11, color: todayData.workout ? "#00d4aa" : "#4a6080" }}>💪 Workout: {todayData.workout ? "Done ✓" : "Not yet"}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Weekly Stats */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+              {[
+                { label: "Week Grade", val: weekGrade.letter, sub: `${weekPct}%`, c: weekGrade.color },
+                { label: "Week Score", val: weekTotal, sub: `of ${weekMax} pts`, c: "#ff9500" },
+                { label: "Day Streak", val: `${streak}🔥`, sub: streak === 1 ? "day" : "days", c: "#a78bfa" },
+              ].map(s => (
+                <div key={s.label} style={{ background: "#0d1623", border: `1px solid ${s.c}25`, borderRadius: 12, padding: 14, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: s.c }}>{s.val}</div>
+                  <div style={{ fontSize: 9, color: "#4a6080", textTransform: "uppercase", marginTop: 2 }}>{s.label}</div>
+                  <div style={{ fontSize: 10, color: "#627990", marginTop: 2 }}>{s.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* 7-Day Chart */}
+            <div style={{ background: "#0d1623", borderRadius: 14, padding: 16, marginBottom: 14, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Last 7 Days</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[...weekHistory].reverse().map((h, i) => {
+                  const s = dayScore(h.data);
+                  const g = getGrade(Math.round((s / MAX_DAILY) * 100));
+                  const barH = Math.max(4, Math.round((s / MAX_DAILY) * 60));
+                  return (
+                    <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: s > 0 ? g.color : "#2a3a4a" }}>{s > 0 ? g.letter : "—"}</div>
+                      <div style={{ width: "100%", height: 60, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+                        <div style={{ width: "70%", height: barH, borderRadius: 3, background: s > 0 ? g.color : "#1a2332", opacity: h.isToday ? 1 : 0.7 }} />
+                      </div>
+                      <div style={{ fontSize: 9, color: h.isToday ? "#fff" : "#4a6080", textAlign: "center", lineHeight: 1.3 }}>
+                        {h.label.split(",")[0]}
+                        {h.isToday && <div style={{ color: "#00d4aa", fontSize: 8 }}>today</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Scoring Key */}
+            <div style={{ background: "#0d1623", borderRadius: 12, padding: 14, marginBottom: 14, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>Scoring System</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>
+                {[{ label: "Each Meal", pts: "+1 pt", c: "#00d4aa" }, { label: "Workout Done", pts: "+4 pts", c: "#ff9500" }, { label: "Max/Day", pts: "10 pts", c: "#a78bfa" }].map(s => (
+                  <div key={s.label} style={{ background: s.c + "12", border: `1px solid ${s.c}25`, borderRadius: 8, padding: "6px 12px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: s.c }}>{s.pts}</div>
+                    <div style={{ fontSize: 10, color: "#627990" }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {[{ letter: "A+", range: "95–100%", c: "#00d4aa" }, { letter: "A", range: "90–94%", c: "#00d4aa" }, { letter: "B", range: "80–89%", c: "#7ecb20" }, { letter: "C", range: "70–79%", c: "#ff9500" }, { letter: "D", range: "60–69%", c: "#ff6b35" }, { letter: "F", range: "<60%", c: "#ff3b5c" }].map(g => (
+                  <div key={g.letter} style={{ fontSize: 11, borderRadius: 6, padding: "3px 10px", background: g.c + "12", border: `1px solid ${g.c}25`, color: g.c }}>
+                    <span style={{ fontWeight: 800 }}>{g.letter}</span> {g.range}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Meal Check-ins */}
+            <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Today's Meals</div>
+            {MEALS.map((meal, i) => (
+              <div key={i} onClick={() => toggleMeal(i)} style={{ background: todayData.meals[i] ? "#00d4aa0d" : "#0d1623", border: `1px solid ${todayData.meals[i] ? "#00d4aa40" : "#1a2332"}`, borderRadius: 12, padding: "12px 14px", marginBottom: 8, display: "flex", alignItems: "center", gap: 12, cursor: "pointer", transition: "all 0.15s ease", userSelect: "none" }}>
+                <Checkbox checked={todayData.meals[i]} onToggle={() => toggleMeal(i)} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, color: todayData.meals[i] ? "#00d4aa" : "#4a6080", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 2 }}>{meal.time} — {meal.label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: todayData.meals[i] ? "#e8edf5" : "#627990" }}>{meal.main}</div>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: todayData.meals[i] ? "#00d4aa" : "#4a6080" }}>{todayData.meals[i] ? "✓ +1" : "+1"}</div>
+              </div>
+            ))}
+
+            {/* Workout Check-in */}
+            <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10, marginTop: 18 }}>Today's Workout</div>
+            <div onClick={toggleWorkout} style={{ background: todayData.workout ? "#ff950012" : "#0d1623", border: `1px solid ${todayData.workout ? "#ff950060" : "#1a2332"}`, borderRadius: 14, padding: 18, cursor: "pointer", display: "flex", alignItems: "center", gap: 14, transition: "all 0.15s ease", userSelect: "none" }}>
+              <Checkbox checked={todayData.workout} onToggle={toggleWorkout} color="#ff9500" />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: todayData.workout ? "#ff9500" : "#e8edf5" }}>💪 Workout Complete</div>
+                <div style={{ fontSize: 12, color: "#627990", marginTop: 3 }}>Tap to mark your workout done for today</div>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: todayData.workout ? "#ff9500" : "#4a6080" }}>{todayData.workout ? "✓ +4" : "+4"}</div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── OVERVIEW ─── */}
+        {tab === "overview" && (
+          <div>
+            <div style={{ background: "#0d1623", borderRadius: 14, padding: 18, marginBottom: 14, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Your Daily Schedule</div>
+              {[
+                { time: "6:15", label: "Wake up — East Coast email triage begins", accent: "#ff9500" },
+                { time: "7:00", label: "Breakfast — high protein to fuel the morning", accent: "#00d4aa" },
+                { time: "10:30", label: "Mid-morning snack — keeps energy stable at desk", accent: "#00d4aa" },
+                { time: "12:00", label: "Pre-workout snack — light carbs + protein", accent: "#38bdf8" },
+                { time: "12:30", label: "WORKOUT — 35–55 min, home gym", accent: "#00d4aa", bold: true },
+                { time: "1:30", label: "Post-workout lunch — biggest meal of the day", accent: "#00d4aa" },
+                { time: "4:30", label: "Afternoon snack", accent: "#00d4aa" },
+                { time: "7:00", label: "Dinner — lighter, protein-focused", accent: "#00d4aa" },
+                { time: "10:00", label: "Lights out — 8 hrs of sleep is non-negotiable", accent: "#a78bfa" },
+              ].map((row, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 12 }}>
+                  <div style={{ width: 42, fontSize: 11, color: "#4a6080", flexShrink: 0, paddingTop: 1 }}>{row.time}</div>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: row.accent, flexShrink: 0, marginTop: 5 }} />
+                  <div style={{ fontSize: 13, color: row.bold ? "#fff" : "#94a8c0", lineHeight: 1.4, fontWeight: row.bold ? 700 : 400 }}>{row.label}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>The 3-Phase Progression</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 14 }}>
+              {PHASES.map((ph, i) => (
+                <div key={i} style={{ background: "#0d1623", border: `1px solid ${ph.color}30`, borderRadius: 12, padding: 14, textAlign: "center" }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: ph.bg, border: `1px solid ${ph.color}50`, margin: "0 auto 10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 800, color: ph.color }}>{ph.num}</div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>{ph.label}</div>
+                  <div style={{ fontSize: 10, color: ph.color, marginTop: 3 }}>{ph.days}</div>
+                  <div style={{ fontSize: 10, color: "#4a6080", marginTop: 8, lineHeight: 1.4 }}>{ph.freq}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ background: "#0d1623", borderRadius: 14, padding: 18, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Non-Negotiable Rules</div>
+              {[
+                ["12:30 PM workouts", "After the email crunch, your cortisol is elevated — perfect for training. Use it."],
+                ["180g protein daily", "Protects muscle mass while you burn fat. The single most important nutrition number."],
+                ["Progressive overload", "Add weight or reps every 1–2 weeks. If it's not getting harder, you're not growing."],
+                ["8 hours of sleep", "10 PM bedtime. Fat loss and muscle growth happen overnight. Sleep is the third leg of this plan."],
+                ["Weigh in Mondays", "Same time, same conditions. Use a 4-week rolling average, not day-to-day fluctuations."],
+                ["Score 70+ every day", "Use the Track tab daily. A C or better keeps the momentum going."],
+              ].map(([title, body], i) => (
+                <div key={i} style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 4, background: "#00d4aa18", border: "1px solid #00d4aa40", flexShrink: 0, marginTop: 1, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#00d4aa", fontWeight: 700 }}>✓</div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{title}</div>
+                    <div style={{ fontSize: 12, color: "#627990", marginTop: 3, lineHeight: 1.5 }}>{body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── WORKOUTS ─── */}
+        {tab === "workouts" && (
+          <div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+              {PHASES.map((ph, i) => (
+                <button key={i} onClick={() => { setPhaseIdx(i); setWorkoutIdx(0); }} style={{ flex: 1, padding: "10px 6px", border: `1px solid ${phaseIdx === i ? ph.color : "#1a2332"}`, borderRadius: 10, background: phaseIdx === i ? ph.bg : "#0d1623", color: phaseIdx === i ? ph.color : "#4a6080", cursor: "pointer", fontSize: 11, fontWeight: 700, letterSpacing: 0.5 }}>
+                  {ph.label}<br /><span style={{ fontSize: 9, opacity: 0.7, fontWeight: 400 }}>{ph.days}</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ background: "#0d1623", borderRadius: 12, padding: 16, border: `1px solid ${phase.color}25`, marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: phase.color, fontWeight: 700, marginBottom: 6 }}>{phase.freq}</div>
+              <div style={{ fontSize: 13, color: "#94a8c0", lineHeight: 1.5, marginBottom: 12 }}>{phase.desc}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {phase.schedule.map((s, i) => (
+                  <div key={i} style={{ fontSize: 11, borderRadius: 6, padding: "4px 10px", background: DAY_COLORS[s.type] + "15", border: `1px solid ${DAY_COLORS[s.type]}30`, color: DAY_COLORS[s.type] }}>
+                    <span style={{ opacity: 0.6, fontSize: 10 }}>{s.day} </span>{s.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+            {phase.workouts.length > 1 && (
+              <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+                {phase.workouts.map((w, i) => (
+                  <button key={i} onClick={() => setWorkoutIdx(i)} style={{ flex: 1, padding: "9px 6px", border: `1px solid ${workoutIdx === i ? phase.color : "#1a2332"}`, borderRadius: 8, background: workoutIdx === i ? phase.color + "18" : "#0d1623", color: workoutIdx === i ? phase.color : "#4a6080", cursor: "pointer", fontSize: 11, fontWeight: 600 }}>{w.name}</button>
+                ))}
+              </div>
+            )}
+            {(() => {
+              const w = phase.workouts[workoutIdx] || phase.workouts[0];
+              return (
+                <div style={{ background: "#0d1623", borderRadius: 14, padding: 16, border: "1px solid #1a2332" }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 16, paddingBottom: 12, borderBottom: "1px solid #1a2332" }}>💪 {w.name}</div>
+                  {w.exercises.map((ex, ei) => (
+                    <div key={ei} style={{ marginBottom: ei < w.exercises.length-1 ? 12 : 0, paddingBottom: ei < w.exercises.length-1 ? 12 : 0, borderBottom: ei < w.exercises.length-1 ? "1px solid #111a28" : "none" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 600, color: "#e8edf5" }}>{ex.name}</div>
+                          {ex.tip && <div style={{ fontSize: 11, color: "#4a6080", marginTop: 2 }}>{ex.tip}</div>}
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexShrink: 0, marginLeft: 10 }}>
+                          {[{ val: ex.sets, label: "sets", c: phase.color, bg: phase.bg }, { val: ex.reps, label: "reps", c: "#94a8c0", bg: "#111a28" }, { val: ex.rest, label: "rest", c: "#627990", bg: "#111a28" }].map((b, bi) => (
+                            <div key={bi} style={{ background: b.bg, border: `1px solid ${b.c}30`, borderRadius: 6, padding: "3px 8px", textAlign: "center" }}>
+                              <div style={{ fontSize: bi === 0 ? 14 : 12, fontWeight: 700, color: b.c }}>{b.val}</div>
+                              <div style={{ fontSize: 9, color: "#4a6080" }}>{b.label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+            {phaseIdx === 2 && (
+              <div style={{ background: "#ff3b5c12", border: "1px solid #ff3b5c30", borderRadius: 12, padding: 14, marginTop: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#ff3b5c", marginBottom: 6 }}>⚡ Saturday HIIT Protocol</div>
+                <div style={{ fontSize: 12, color: "#94a8c0", lineHeight: 1.6 }}>20 minutes total. 30 sec max effort → 60 sec rest. Repeat 13 rounds. Zero equipment needed.</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── MEALS ─── */}
+        {tab === "meals" && (
+          <div>
+            <div style={{ background: "#0d1623", borderRadius: 14, padding: 16, marginBottom: 14, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Daily Macro Targets</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+                {[{ label: "Calories", val: "1,750", c: "#ff9500", sub: "kcal" }, { label: "Protein", val: "180g", c: "#00d4aa", sub: "priority" }, { label: "Carbs", val: "145g", c: "#38bdf8", sub: "fuel" }, { label: "Fat", val: "50g", c: "#f472b6", sub: "hormones" }].map(m => (
+                  <div key={m.label} style={{ textAlign: "center", background: "#111a28", border: `1px solid ${m.c}25`, borderRadius: 10, padding: "12px 6px" }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: m.c }}>{m.val}</div>
+                    <div style={{ fontSize: 9, color: "#4a6080", marginTop: 3, textTransform: "uppercase" }}>{m.label}</div>
+                    <div style={{ fontSize: 9, color: m.c, opacity: 0.6, marginTop: 2 }}>{m.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>Sample Daily Meal Plan</div>
+            {MEALS.map((meal, i) => (
+              <div key={i} style={{ background: "#0d1623", borderRadius: 12, padding: 14, marginBottom: 10, border: "1px solid #1a2332" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 10, color: "#00d4aa", fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 2 }}>{meal.time} — {meal.label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#e8edf5" }}>{meal.main}</div>
+                    <div style={{ fontSize: 12, color: "#627990", marginTop: 2 }}>{meal.side}</div>
+                  </div>
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#ff9500" }}>{meal.cal}</div>
+                    <div style={{ fontSize: 9, color: "#4a6080", textTransform: "uppercase" }}>kcal</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {[{ label: "Protein", val: meal.protein+"g", c: "#00d4aa" }, { label: "Carbs", val: meal.carbs+"g", c: "#38bdf8" }, { label: "Fat", val: meal.fat+"g", c: "#f472b6" }].map(m => (
+                    <div key={m.label} style={{ fontSize: 11, borderRadius: 5, padding: "3px 8px", background: m.c+"12", border: `1px solid ${m.c}25`, color: m.c }}>{m.label}: {m.val}</div>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ background: "#ff950012", border: "1px solid #ff950030", borderRadius: 10, padding: 12, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: "#ff9500", fontWeight: 700 }}>Daily Total</div>
+              <div style={{ display: "flex", gap: 16 }}>
+                {[{ label: "Cal", val: "1,750" }, { label: "Protein", val: "180g" }, { label: "Carbs", val: "145g" }, { label: "Fat", val: "50g" }].map(t => (
+                  <div key={t.label} style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{t.val}</div>
+                    <div style={{ fontSize: 9, color: "#4a6080", textTransform: "uppercase" }}>{t.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div style={{ background: "#0d1623", borderRadius: 14, padding: 16, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 11, color: "#4a6080", letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>Nutrition Strategy</div>
+              {TIPS.map((t, i) => (
+                <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                  <div style={{ fontSize: 18, flexShrink: 0 }}>{t.icon}</div>
+                  <div style={{ fontSize: 13, color: "#94a8c0", lineHeight: 1.5 }}>{t.tip}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── GROCERY ─── */}
+        {tab === "grocery" && (
+          <div>
+            <div style={{ background: "#0d1623", borderRadius: 12, padding: 14, marginBottom: 14, border: "1px solid #1a2332" }}>
+              <div style={{ fontSize: 13, color: "#94a8c0", lineHeight: 1.6 }}>Weekly list for <span style={{ color: "#fff", fontWeight: 700 }}>7 days</span>. Meal prep Sunday — cook all proteins and rice at once.</div>
+            </div>
+            {GROCERY.map((section, si) => (
+              <div key={si} style={{ background: "#0d1623", borderRadius: 14, padding: 16, marginBottom: 12, border: "1px solid #1a2332" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 12, borderBottom: "1px solid #111a28" }}>
+                  <span style={{ fontSize: 20 }}>{section.icon}</span>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: section.color, textTransform: "uppercase", letterSpacing: 1 }}>{section.category}</div>
+                </div>
+                {section.items.map((item, ii) => (
+                  <div key={ii} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: ii < section.items.length-1 ? 12 : 0, paddingBottom: ii < section.items.length-1 ? 12 : 0, borderBottom: ii < section.items.length-1 ? "1px solid #111a28" : "none" }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#e8edf5" }}>{item.name}</div>
+                      <div style={{ fontSize: 11, color: "#4a6080", marginTop: 2 }}>{item.note}</div>
+                    </div>
+                    <div style={{ background: section.color+"15", border: `1px solid ${section.color}30`, borderRadius: 6, padding: "4px 10px", fontSize: 12, color: section.color, fontWeight: 700, flexShrink: 0, marginLeft: 10, whiteSpace: "nowrap" }}>{item.qty}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+            <div style={{ background: "#00d4aa12", border: "1px solid #00d4aa30", borderRadius: 12, padding: 14 }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#00d4aa", marginBottom: 8 }}>🛒 Shopping Strategy</div>
+              {["Shop the perimeter first — that's where all your real food lives.", "Buy proteins in bulk and freeze half. Thaw Thursday night for the weekend.", "Frozen berries and broccoli are just as nutritious and cheaper than fresh.", "Pre-portion jerky into 2 oz snack bags on Sunday — grab and go all week."].map((tip, i) => (
+                <div key={i} style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+                  <div style={{ color: "#00d4aa", fontSize: 12, flexShrink: 0 }}>→</div>
+                  <div style={{ fontSize: 12, color: "#94a8c0", lineHeight: 1.5 }}>{tip}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
